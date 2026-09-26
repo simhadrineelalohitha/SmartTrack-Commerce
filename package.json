@@ -1,0 +1,23 @@
+{
+  "name": "simple-ecommerce",
+  "version": "1.0.0",
+  "description": "A simple full-stack e-commerce website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "ecommerce",
+    "express",
+    "sqlite"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.18.2",
+    "express-session": "^1.19.0",
+    "sqlite3": "^5.1.6"
+  }
+}

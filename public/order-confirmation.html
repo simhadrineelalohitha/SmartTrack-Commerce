@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation - E-Commerce Store</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .confirmation-container {
+      max-width: 800px;
+      margin: 60px auto;
+      padding: 0 20px;
+    }
+
+    .confirmation-card {
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: #4CAF50;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 40px;
+      color: white;
+    }
+
+    .confirmation-card h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .confirmation-card .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 16px;
+    }
+
+    .order-details {
+      background: #f9f9f9;
+      padding: 25px;
+      border-radius: 8px;
+      margin: 30px 0;
+      text-align: left;
+    }
+
+    .order-detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .order-detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .order-detail-label {
+      color: #666;
+      font-weight: 500;
+    }
+
+    .order-detail-value {
+      color: #333;
+      font-weight: 600;
+    }
+
+    .order-items-section {
+      margin: 30px 0;
+      text-align: left;
+    }
+
+    .order-items-section h3 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    .order-item {
+      display: flex;
+      gap: 15px;
+      padding: 15px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .order-item-image {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .order-item-details {
+      flex: 1;
+    }
+
+    .order-item-name {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .order-item-meta {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .order-item-total {
+      font-weight: 600;
+      color: #333;
+      align-self: center;
+    }
+
+    .order-total-section {
+      background: #f0f8f0;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .order-total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: #fff3cd;
+      color: #856404;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .btn {
+      padding: 12px 30px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #45a049;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #333;
+      border: 2px solid #ddd;
+    }
+
+    .btn-secondary:hover {
+      border-color: #4CAF50;
+      color: #4CAF50;
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #4CAF50;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .confirmation-card {
+        padding: 30px 20px;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav>
+        <div class="logo">
+          <a href="/">E-Store</a>
+        </div>
+        <div class="nav-links" id="navLinks">
+          <a href="/">Home</a>
+          <a href="/?page=products">Products</a>
+          <a href="/orders.html">My Orders</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="confirmation-container">
+      <!-- Loading State -->
+      <div class="loading-state" id="loadingState">
+        <div class="spinner"></div>
+        <p>Loading order details...</p>
+      </div>
+
+      <!-- Confirmation Card -->
+      <div class="confirmation-card" id="confirmationCard" style="display: none;">
+        <div class="success-icon">✓</div>
+        <h1>Order Confirmed!</h1>
+        <p class="subtitle">Thank you for your order. We'll send you a confirmation email shortly.</p>
+
+        <!-- Order Details -->
+        <div class="order-details">
+          <div class="order-detail-row">
+            <span class="order-detail-label">Order ID:</span>
+            <span class="order-detail-value" id="orderId">-</span>
+          </div>
+          <div class="order-detail-row">
+            <span class="order-detail-label">Order Date:</span>
+            <span class="order-detail-value" id="orderDate">-</span>
+          </div>
+          <div class="order-detail-row">
+            <span class="order-detail-label">Status:</span>
+            <span class="status-badge" id="orderStatus">Pending</span>
+          </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="order-items-section">
+          <h3>Order Items</h3>
+          <div id="orderItemsContainer"></div>
+        </div>
+
+        <!-- Order Total -->
+        <div class="order-total-section">
+          <div class="order-total-row">
+            <span>Total Amount:</span>
+            <span id="orderTotal">$0.00</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <a href="/orders.html" class="btn btn-primary">View All Orders</a>
+          <a href="/?page=products" class="btn btn-secondary">Continue Shopping</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Get order ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('orderId');
+
+    if (!orderId) {
+      window.location.href = '/';
+    }
+
+    // Load order details
+    async function loadOrderDetails() {
+      try {
+        const response = await fetch(`/api/orders/${orderId}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to load order details');
+        }
+
+        const order = await response.json();
+        displayOrderDetails(order);
+      } catch (error) {
+        console.error('Error loading order:', error);
+        alert('Error loading order details. Redirecting to orders page...');
+        window.location.href = '/orders.html';
+      }
+    }
+
+    // Display order details
+    function displayOrderDetails(order) {
+      // Hide loading, show confirmation
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('confirmationCard').style.display = 'block';
+
+      // Set order details
+      document.getElementById('orderId').textContent = `#${order.id}`;
+      
+      const orderDate = new Date(order.createdAt);
+      document.getElementById('orderDate').textContent = orderDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      document.getElementById('orderStatus').textContent = order.status;
+      document.getElementById('orderTotal').textContent = `$${parseFloat(order.totalAmount).toFixed(2)}`;
+
+      // Display order items
+      const itemsContainer = document.getElementById('orderItemsContainer');
+      itemsContainer.innerHTML = order.items.map(item => `
+        <div class="order-item">
+          <img src="${item.image_url}" alt="${item.name}" class="order-item-image"
+               onerror="this.src='https://via.placeholder.com/80x80?text=No+Image'">
+          <div class="order-item-details">
+            <div class="order-item-name">${item.name}</div>
+            <div class="order-item-meta">
+              Quantity: ${item.quantity} × $${parseFloat(item.price).toFixed(2)}
+            </div>
+          </div>
+          <div class="order-item-total">
+            $${(item.quantity * parseFloat(item.price)).toFixed(2)}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Initialize
+    loadOrderDetails();
+  </script>
+</body>
+</html>

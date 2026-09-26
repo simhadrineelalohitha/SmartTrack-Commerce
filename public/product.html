@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details - SmartTrack Commerce</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/modern.css">
+  <style>
+    .product-detail-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .product-detail-main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      margin-bottom: 3rem;
+    }
+
+    .product-image-section {
+      position: relative;
+    }
+
+    .product-image-main {
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .product-info-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .product-title {
+      font-size: 2rem;
+      margin: 0;
+      color: #1a1a1a;
+    }
+
+    .product-rating-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .product-price-section {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .product-stock {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      display: inline-block;
+      font-weight: 500;
+    }
+
+    .stock-available {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .stock-low {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .stock-out {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .product-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .quantity-selector {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 0.5rem;
+    }
+
+    .quantity-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: #f0f0f0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .quantity-input {
+      width: 60px;
+      text-align: center;
+      border: none;
+      font-size: 16px;
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      margin: 2rem 0 1rem;
+      color: #1a1a1a;
+    }
+
+    .reviews-section, .related-section {
+      margin-top: 3rem;
+    }
+
+    .review-card {
+      background: #f9f9f9;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+    }
+
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .review-form {
+      background: #f0f4ff;
+      padding: 2rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .product-detail-main {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .product-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-brand">
+        <a href="index.html" style="text-decoration: none; color: inherit;">
+          <h1>⚡ SmartTrack Commerce</h1>
+          <p class="tagline">Shop. Discover. Track.</p>
+        </a>
+      </div>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="track-order.html" class="nav-link">Track Order</a>
+        <a href="wishlist.html" class="nav-link">
+          Wishlist <span id="wishlist-count" class="badge">0</span>
+        </a>
+        <a href="comparison.html" class="nav-link">
+          Compare <span class="badge comparison-badge">0</span>
+        </a>
+        <a href="index.html#cart" class="nav-link">
+          Cart <span id="cart-count" class="badge">0</span>
+        </a>
+        <a href="dashboard.html" class="nav-link" id="auth-link">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="product-detail-container">
+    <div id="product-loading" class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading product...</p>
+    </div>
+
+    <div id="product-content" style="display: none;">
+      <div class="product-detail-main">
+        <div class="product-image-section">
+          <img id="product-image" class="product-image-main" src="" alt="">
+        </div>
+
+        <div class="product-info-section">
+          <div>
+            <span id="product-category" class="product-category"></span>
+            <h1 id="product-title" class="product-title"></h1>
+          </div>
+
+          <div id="product-rating-section" class="product-rating-section"></div>
+
+          <div id="product-price" class="product-price-section"></div>
+
+          <div id="product-stock" class="product-stock"></div>
+
+          <p id="product-description" style="line-height: 1.6;"></p>
+
+          <div class="product-actions">
+            <div class="quantity-selector">
+              <button class="quantity-btn" onclick="changeQuantity(-1)">−</button>
+              <input type="number" id="quantity" class="quantity-input" value="1" min="1" readonly>
+              <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+            </div>
+            <button class="btn btn-primary btn-large" id="add-to-cart-btn" onclick="addToCartFromDetail()">
+              Add to Cart
+            </button>
+            <button class="btn btn-secondary" onclick="toggleWishlist(currentProductId)">
+              <span id="wishlist-btn-text">♡ Wishlist</span>
+            </button>
+            <button class="btn btn-secondary" onclick="addToComparison()">
+              ⚖ Compare
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Section -->
+      <div class="reviews-section">
+        <h2 class="section-title">Customer Reviews</h2>
+        
+        <div class="review-form">
+          <h3>Write a Review</h3>
+          <div id="review-auth-required" style="display: none;">
+            <p>Please <a href="login.html">login</a> to write a review.</p>
+          </div>
+          <form id="review-form" onsubmit="submitReview(event)">
+            <div class="form-group">
+              <label>Your Rating</label>
+              <div id="rating-selector" class="star-rating-interactive">
+                <span class="star" data-rating="1" onclick="selectRating(1)">★</span>
+                <span class="star" data-rating="2" onclick="selectRating(2)">★</span>
+                <span class="star" data-rating="3" onclick="selectRating(3)">★</span>
+                <span class="star" data-rating="4" onclick="selectRating(4)">★</span>
+                <span class="star" data-rating="5" onclick="selectRating(5)">★</span>
+              </div>
+              <input type="hidden" id="rating-value" value="0">
+            </div>
+            <div class="form-group">
+              <label for="review-text">Your Review</label>
+              <textarea id="review-text" rows="4" placeholder="Share your experience with this product..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+          </form>
+        </div>
+
+        <div id="reviews-list"></div>
+      </div>
+
+      <!-- Related Products -->
+      <div class="related-section">
+        <h2 class="section-title">You May Also Like</h2>
+        <div id="related-products" class="products-grid"></div>
+      </div>
+    </div>
+
+    <!-- Product Assistant -->
+    <div id="product-assistant"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2024 SmartTrack Commerce. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="js/ui-components.js"></script>
+  <script src="js/wishlist.js"></script>
+  <script src="js/assistant.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let currentProductId = null;
+    let currentProduct = null;
+    let selectedRating = 0;
+
+    // Get product ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    currentProductId = parseInt(urlParams.get('id'));
+
+    // Load product on page load
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (!currentProductId) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      await loadProduct();
+      await loadReviews();
+      await loadRelatedProducts();
+      await checkAuth();
+      
+      if (assistant) {
+        assistant.setProduct(currentProductId);
+      }
+    });
+
+    async function loadProduct() {
+      try {
+        const response = await fetch(`/api/products/${currentProductId}`);
+        if (!response.ok) throw new Error('Product not found');
+        
+        currentProduct = await response.json();
+        displayProduct(currentProduct);
+        
+        RecentlyViewed.add(currentProductId);
+      } catch (error) {
+        console.error('Error loading product:', error);
+        Toast.error('Failed to load product');
+        setTimeout(() => window.location.href = 'index.html', 2000);
+      }
+    }
+
+    function displayProduct(product) {
+      document.getElementById('product-loading').style.display = 'none';
+      document.getElementById('product-content').style.display = 'block';
+
+      document.getElementById('product-image').src = product.image_url || 'https://via.placeholder.com/600';
+      document.getElementById('product-image').alt = product.name;
+      document.getElementById('product-category').textContent = product.category;
+      document.getElementById('product-title').textContent = product.name;
+      document.title = `${product.name} - SmartTrack Commerce`;
+      document.getElementById('product-description').textContent = product.description;
+      document.getElementById('product-price').textContent = formatCurrency(product.price);
+
+      // Rating
+      const ratingSection = document.getElementById('product-rating-section');
+      if (product.review_count > 0) {
+        ratingSection.innerHTML = `
+          ${createStarRating(product.avg_rating)}
+          <span>${product.avg_rating.toFixed(1)} / 5</span>
+          <span class="text-muted">(${product.review_count} reviews)</span>
+        `;
+      } else {
+        ratingSection.innerHTML = '<span class="text-muted">No reviews yet</span>';
+      }
+
+      // Stock
+      const stockEl = document.getElementById('product-stock');
+      if (product.stock === 0) {
+        stockEl.className = 'product-stock stock-out';
+        stockEl.textContent = 'Out of Stock';
+        document.getElementById('add-to-cart-btn').disabled = true;
+        document.getElementById('add-to-cart-btn').classList.add('btn-disabled');
+      } else if (product.stock < 10) {
+        stockEl.className = 'product-stock stock-low';
+        stockEl.textContent = `Only ${product.stock} left in stock`;
+      } else {
+        stockEl.className = 'product-stock stock-available';
+        stockEl.textContent = 'In Stock';
+      }
+    }
+
+    async function loadReviews() {
+      try {
+        const response = await fetch(`/api/products/${currentProductId}/reviews`);
+        const reviews = await response.json();
+        
+        const reviewsList = document.getElementById('reviews-list');
+        if (reviews.length === 0) {
+          reviewsList.innerHTML = '<p class="text-muted">No reviews yet. Be the first to review!</p>';
+          return;
+        }
+
+        reviewsList.innerHTML = reviews.map(review => `
+          <div class="review-card">
+            <div class="review-header">
+              <div>
+                <strong>${review.user_name}</strong>
+                <div>${createStarRating(review.rating)}</div>
+              </div>
+              <span class="text-muted">${formatDate(review.created_at)}</span>
+            </div>
+            <p>${review.review_text || 'No comment provided.'}</p>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading reviews:', error);
+      }
+    }
+
+    async function loadRelatedProducts() {
+      try {
+        const response = await fetch(`/api/products/${currentProductId}/related`);
+        const products = await response.json();
+        
+        const container = document.getElementById('related-products');
+        if (products.length === 0) {
+          container.innerHTML = '<p class="text-muted">No related products found.</p>';
+          return;
+        }
+
+        container.innerHTML = products.map(p => createProductCard(p)).join('');
+      } catch (error) {
+        console.error('Error loading related products:', error);
+      }
+    }
+
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/auth/check');
+        const data = await response.json();
+        
+        if (data.authenticated) {
+          document.getElementById('review-form').style.display = 'block';
+          document.getElementById('review-auth-required').style.display = 'none';
+          
+          // Check wishlist status
+          const wishlistResponse = await fetch(`/api/wishlist/check/${currentProductId}`);
+          const wishlistData = await wishlistResponse.json();
+          if (wishlistData.inWishlist) {
+            document.getElementById('wishlist-btn-text').textContent = '♥ In Wishlist';
+          }
+        } else {
+          document.getElementById('review-form').style.display = 'none';
+          document.getElementById('review-auth-required').style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error checking auth:', error);
+      }
+    }
+
+    function selectRating(rating) {
+      selectedRating = rating;
+      document.getElementById('rating-value').value = rating;
+      
+      const stars = document.querySelectorAll('#rating-selector .star');
+      stars.forEach((star, index) => {
+        star.classList.toggle('star-selected', index < rating);
+      });
+    }
+
+    async function submitReview(event) {
+      event.preventDefault();
+      
+      const rating = parseInt(document.getElementById('rating-value').value);
+      const reviewText = document.getElementById('review-text').value.trim();
+      
+      if (rating === 0) {
+        Toast.warning('Please select a rating');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/products/${currentProductId}/reviews`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rating, review_text: reviewText })
+        });
+
+        if (response.ok) {
+          Toast.success('Review submitted successfully!');
+          document.getElementById('review-form').reset();
+          selectedRating = 0;
+          document.querySelectorAll('#rating-selector .star').forEach(star => {
+            star.classList.remove('star-selected');
+          });
+          
+          await loadProduct();
+          await loadReviews();
+        } else {
+          Toast.error('Failed to submit review');
+        }
+      } catch (error) {
+        console.error('Error submitting review:', error);
+        Toast.error('Error submitting review');
+      }
+    }
+
+    function changeQuantity(delta) {
+      const input = document.getElementById('quantity');
+      let value = parseInt(input.value) + delta;
+      if (value < 1) value = 1;
+      if (value > currentProduct.stock) value = currentProduct.stock;
+      input.value = value;
+    }
+
+    async function addToCartFromDetail() {
+      const quantity = parseInt(document.getElementById('quantity').value);
+      
+      try {
+        const response = await fetch('/api/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId: currentProductId,
+            quantity: quantity
+          })
+        });
+
+        if (response.ok) {
+          Toast.success(`${currentProduct.name} added to cart!`);
+          // Update cart count if function exists
+          if (window.updateCartCount) updateCartCount();
+        } else {
+          Toast.error('Failed to add to cart');
+        }
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        Toast.error('Error adding to cart');
+      }
+    }
+
+    function addToComparison() {
+      if (currentProduct) {
+        ComparisonManager.add(currentProduct);
+      }
+    }
+
+    function viewProduct(productId) {
+      window.location.href = `product.html?id=${productId}`;
+    }
+  </script>
+</body>
+</html>

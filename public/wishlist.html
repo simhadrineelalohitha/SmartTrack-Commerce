@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Wishlist - SmartTrack Commerce</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/modern.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-brand">
+        <a href="index.html" style="text-decoration: none; color: inherit;">
+          <h1>⚡ SmartTrack Commerce</h1>
+          <p class="tagline">Shop. Discover. Track.</p>
+        </a>
+      </div>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="track-order.html" class="nav-link">Track Order</a>
+        <a href="wishlist.html" class="nav-link active">Wishlist</a>
+        <a href="comparison.html" class="nav-link">Compare <span class="badge comparison-badge">0</span></a>
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container" style="padding: 2rem 1rem; min-height: 60vh;">
+    <div id="wishlist-container"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2024 SmartTrack Commerce. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="js/ui-components.js"></script>
+  <script src="js/wishlist.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      const authCheck = await fetch('/api/auth/check');
+      const authData = await authCheck.json();
+      
+      if (!authData.authenticated) {
+        Toast.warning('Please login to view wishlist');
+        setTimeout(() => window.location.href = 'login.html', 1500);
+        return;
+      }
+
+      await loadWishlist();
+    });
+
+    function viewProduct(productId) {
+      window.location.href = `product.html?id=${productId}`;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Order - SmartTrack Commerce</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .track-container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .track-hero {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 3rem 2rem;
+      border-radius: var(--radius-lg);
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .track-hero h1 {
+      color: white;
+      margin-bottom: 1rem;
+    }
+
+    .track-input-section {
+      background: var(--bg-primary);
+      padding: 2rem;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      margin-bottom: 2rem;
+    }
+
+    .track-input-group {
+      display: flex;
+      gap: 1rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .track-input-group input {
+      flex: 1;
+      padding: 0.875rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+    }
+
+    .track-input-group button {
+      padding: 0.875rem 2rem;
+    }
+
+    .tracking-details {
+      background: var(--bg-primary);
+      padding: 2rem;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-light);
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border-light);
+      margin-bottom: 2rem;
+    }
+
+    .order-number {
+      font-size: 1.5rem;
+      font-weight: var(--font-weight-bold);
+      color: var(--text-primary);
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 3rem;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border-light);
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-bottom: 2rem;
+    }
+
+    .timeline-item:last-child {
+      padding-bottom: 0;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -3rem;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 3px solid var(--border-light);
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .timeline-dot.completed {
+      background: var(--success-color);
+      border-color: var(--success-color);
+      color: white;
+    }
+
+    .timeline-dot.current {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: white;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+    }
+
+    .timeline-content {
+      padding-left: 1rem;
+    }
+
+    .timeline-status {
+      font-weight: var(--font-weight-semibold);
+      font-size: 1.125rem;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline-date {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .estimated-delivery {
+      background: var(--bg-secondary);
+      padding: 1.5rem;
+      border-radius: var(--radius-md);
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    .estimated-delivery h3 {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .estimated-delivery .date {
+      font-size: 1.5rem;
+      font-weight: var(--font-weight-bold);
+      color: var(--success-color);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="navbar">
+      <div class="container">
+        <div class="nav-brand" onclick="window.location.href='/'">
+          <h1>SmartTrack Commerce</h1>
+          <p class="tagline">Shop. Secure. Track.</p>
+        </div>
+        <div class="nav-links" id="navLinks">
+          <a href="/" class="nav-link">Home</a>
+          <a href="/?page=products" class="nav-link">Products</a>
+          <a href="/track-order.html" class="nav-link">Track Order</a>
+          <a href="/orders.html" class="nav-link">My Orders</a>
+          <a href="/?page=cart" class="nav-link">
+            Cart <span class="badge" id="cartBadge">0</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="track-container">
+      <div class="track-hero">
+        <h1>Track Your Order</h1>
+        <p>Enter your order ID to track your shipment in real-time</p>
+      </div>
+
+      <div class="track-input-section">
+        <div class="track-input-group">
+          <input 
+            type="text" 
+            id="orderIdInput" 
+            placeholder="Enter Order ID (e.g., 1, 2, 3...)"
+            value=""
+          >
+          <button class="btn btn-primary" onclick="trackOrder()">Track</button>
+        </div>
+        <div id="errorMessage" style="color: var(--danger-color); text-align: center; margin-top: 1rem; display: none;"></div>
+      </div>
+
+      <div id="trackingResults" style="display: none;">
+        <div class="tracking-details">
+          <div class="order-header">
+            <div>
+              <div class="order-number">Order #<span id="displayOrderId"></span></div>
+              <div class="order-date" id="orderDate"></div>
+            </div>
+            <div class="order-status" id="currentStatus"></div>
+          </div>
+
+          <div class="timeline" id="timeline">
+            <!-- Timeline items will be inserted here -->
+          </div>
+
+          <div class="estimated-delivery" id="estimatedDeliverySection">
+            <h3>Estimated Delivery</h3>
+            <div class="date" id="estimatedDate">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="loadingState" style="display: none;">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading tracking information...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2024 SmartTrack Commerce. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const statuses = [
+      'Order Placed',
+      'Order Confirmed',
+      'Packed',
+      'Shipped',
+      'Out for Delivery',
+      'Delivered'
+    ];
+
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/auth/me');
+        return response.ok;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    async function trackOrder() {
+      const orderId = document.getElementById('orderIdInput').value.trim();
+      const errorMessage = document.getElementById('errorMessage');
+      
+      errorMessage.style.display = 'none';
+      
+      if (!orderId) {
+        errorMessage.textContent = 'Please enter an order ID';
+        errorMessage.style.display = 'block';
+        return;
+      }
+
+      const isAuth = await checkAuth();
+      if (!isAuth) {
+        window.location.href = `/login.html?redirect=track-order&id=${orderId}`;
+        return;
+      }
+
+      document.getElementById('loadingState').style.display = 'block';
+      document.getElementById('trackingResults').style.display = 'none';
+
+      try {
+        const response = await fetch(`/api/orders/${orderId}/tracking`);
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to fetch tracking information');
+        }
+
+        const data = await response.json();
+        displayTracking(data);
+      } catch (error) {
+        console.error('Tracking error:', error);
+        errorMessage.textContent = error.message || 'Invalid order ID or access denied';
+        errorMessage.style.display = 'block';
+        document.getElementById('loadingState').style.display = 'none';
+      }
+    }
+
+    function displayTracking(data) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('trackingResults').style.display = 'block';
+
+      document.getElementById('displayOrderId').textContent = data.orderId;
+      document.getElementById('currentStatus').innerHTML = `
+        <span class="order-status ${data.currentStatus.toLowerCase().replace(/\s+/g, '-')}">${data.currentStatus}</span>
+      `;
+
+      // Display estimated delivery
+      if (data.estimatedDelivery) {
+        const estDate = new Date(data.estimatedDelivery);
+        document.getElementById('estimatedDate').textContent = estDate.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+      }
+
+      // Build timeline
+      const timeline = document.getElementById('timeline');
+      const historyMap = {};
+      
+      data.history.forEach(h => {
+        historyMap[h.status] = new Date(h.timestamp);
+      });
+
+      const currentStatusIndex = statuses.indexOf(data.currentStatus);
+
+      timeline.innerHTML = statuses.map((status, index) => {
+        const hasCompleted = historyMap[status];
+        const isCurrent = status === data.currentStatus;
+        const isPending = index > currentStatusIndex;
+
+        let dotClass = '';
+        if (hasCompleted && !isCurrent) dotClass = 'completed';
+        if (isCurrent) dotClass = 'current';
+
+        let icon = '';
+        if (hasCompleted && !isCurrent) icon = '✓';
+        if (isCurrent) icon = '●';
+
+        return `
+          <div class="timeline-item">
+            <div class="timeline-dot ${dotClass}">${icon}</div>
+            <div class="timeline-content">
+              <div class="timeline-status">${status}</div>
+              ${hasCompleted ? `<div class="timeline-date">${historyMap[status].toLocaleString()}</div>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateCartBadge() {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      const badge = document.getElementById('cartBadge');
+      if (badge) {
+        badge.textContent = totalItems;
+      }
+    }
+
+    (function init() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderId = urlParams.get('id');
+      
+      if (orderId) {
+        document.getElementById('orderIdInput').value = orderId;
+        trackOrder();
+      }
+      
+      updateCartBadge();
+    })();
+  </script>
+</body>
+</html>

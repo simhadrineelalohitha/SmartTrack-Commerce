@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compare Products - SmartTrack Commerce</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/modern.css">
+  <style>
+    .comparison-container {
+      padding: 2rem 1rem;
+      min-height: 60vh;
+    }
+
+    .comparison-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .comparison-table-wrapper {
+      overflow-x: auto;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 1rem;
+      border: 1px solid #eee;
+    }
+
+    .comparison-table thead th {
+      background: #667eea;
+      color: white;
+      position: relative;
+    }
+
+    .remove-product {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    .comparison-table tbody tr:nth-child(odd) {
+      background: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-brand">
+        <a href="index.html" style="text-decoration: none; color: inherit;">
+          <h1>⚡ SmartTrack Commerce</h1>
+          <p class="tagline">Shop. Discover. Track.</p>
+        </a>
+      </div>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="wishlist.html" class="nav-link">Wishlist</a>
+        <a href="comparison.html" class="nav-link active">Compare</a>
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container comparison-container">
+    <div class="comparison-header">
+      <h1>Product Comparison</h1>
+      <button class="btn btn-secondary" onclick="ComparisonManager.clear()">Clear All</button>
+    </div>
+
+    <div id="comparison-content"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2024 SmartTrack Commerce. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="js/ui-components.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      displayComparison();
+    });
+
+    function displayComparison() {
+      const products = ComparisonManager.get();
+      const container = document.getElementById('comparison-content');
+
+      if (products.length === 0) {
+        EmptyState.show(container, {
+          icon: '⚖',
+          title: 'No products to compare',
+          message: 'Add products to comparison from product pages',
+          action: {
+            text: 'Browse Products',
+            onclick: 'window.location.href="index.html"'
+          }
+        });
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="comparison-table-wrapper">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th style="min-width: 150px;">Attribute</th>
+                ${products.map(p => `
+                  <th class="comparison-product-header" style="position: relative;">
+                    <button class="remove-product" onclick="removeFromComparison(${p.id})" title="Remove">×</button>
+                    <img src="${p.image_url || 'https://via.placeholder.com/100'}" class="comparison-product-image" alt="${p.name}">
+                    <h3 style="margin: 0.5rem 0;">${p.name}</h3>
+                  </th>
+                `).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Price</strong></td>
+                ${products.map(p => `<td>${formatCurrency(p.price)}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Category</strong></td>
+                ${products.map(p => `<td>${p.category}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Rating</strong></td>
+                ${products.map(p => `<td>${p.avg_rating ? p.avg_rating.toFixed(1) + ' ⭐' : 'No reviews'}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Reviews</strong></td>
+                ${products.map(p => `<td>${p.review_count || 0} reviews</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Stock</strong></td>
+                ${products.map(p => `<td>${p.stock > 0 ? 'In Stock (' + p.stock + ')' : 'Out of Stock'}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Description</strong></td>
+                ${products.map(p => `<td>${p.description}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Actions</strong></td>
+                ${products.map(p => `
+                  <td>
+                    <button class="btn btn-primary btn-small" onclick="viewProduct(${p.id})">View Details</button>
+                  </td>
+                `).join('')}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function removeFromComparison(productId) {
+      ComparisonManager.remove(productId);
+      displayComparison();
+    }
+
+    function viewProduct(productId) {
+      window.location.href = `product.html?id=${productId}`;
+    }
+  </script>
+</body>
+</html>

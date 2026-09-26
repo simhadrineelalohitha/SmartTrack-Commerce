@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help & FAQ - SmartTrack Commerce</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/modern.css">
+  <style>
+    .help-container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .help-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .help-header h1 {
+      font-size: 2.5rem;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+
+    .help-search {
+      max-width: 600px;
+      margin: 2rem auto;
+      position: relative;
+    }
+
+    .help-search input {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      border: 2px solid #ddd;
+      border-radius: 50px;
+      font-size: 1rem;
+    }
+
+    .help-categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .help-category {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+
+    .help-category:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .help-category-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .help-category h3 {
+      color: #667eea;
+      margin-bottom: 0.5rem;
+    }
+
+    .faq-section {
+      margin-bottom: 3rem;
+    }
+
+    .faq-section h2 {
+      font-size: 1.8rem;
+      color: #333;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #667eea;
+    }
+
+    .faq-item {
+      background: white;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .faq-question {
+      padding: 1.25rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: #333;
+      transition: background 0.3s;
+    }
+
+    .faq-question:hover {
+      background: #f8f9fa;
+    }
+
+    .faq-question::after {
+      content: '+';
+      font-size: 1.5rem;
+      color: #667eea;
+      transition: transform 0.3s;
+    }
+
+    .faq-question.active::after {
+      transform: rotate(45deg);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      padding: 0 1.25rem;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .faq-answer.active {
+      max-height: 500px;
+      padding: 0 1.25rem 1.25rem;
+    }
+
+    .contact-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 3rem 2rem;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .contact-section h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .contact-section p {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      opacity: 0.95;
+    }
+
+    .contact-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .contact-buttons .btn {
+      background: white;
+      color: #667eea;
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+
+    .contact-buttons .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    @media (max-width: 768px) {
+      .help-header h1 {
+        font-size: 2rem;
+      }
+
+      .help-categories {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-brand">
+        <a href="index.html" style="text-decoration: none; color: inherit;">
+          <h1>⚡ SmartTrack Commerce</h1>
+          <p class="tagline">Shop. Discover. Track.</p>
+        </a>
+      </div>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="track-order.html" class="nav-link">Track Order</a>
+        <a href="wishlist.html" class="nav-link">Wishlist</a>
+        <a href="help.html" class="nav-link active">Help</a>
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="help-container">
+    <div class="help-header">
+      <h1>How can we help you?</h1>
+      <p style="color: #666; font-size: 1.1rem;">Find answers to common questions below</p>
+    </div>
+
+    <div class="help-search">
+      <input type="text" id="faq-search" placeholder="Search for help..." onkeyup="searchFAQ()">
+    </div>
+
+    <div class="help-categories">
+      <div class="help-category">
+        <div class="help-category-icon">📦</div>
+        <h3>Orders</h3>
+        <p>Track orders, view history, and manage deliveries</p>
+      </div>
+      <div class="help-category">
+        <div class="help-category-icon">💳</div>
+        <h3>Payments</h3>
+        <p>Payment methods, security, and billing questions</p>
+      </div>
+      <div class="help-category">
+        <div class="help-category-icon">🚚</div>
+        <h3>Shipping</h3>
+        <p>Delivery times, shipping costs, and tracking</p>
+      </div>
+      <div class="help-category">
+        <div class="help-category-icon">↩️</div>
+        <h3>Returns</h3>
+        <p>Return policy, refunds, and exchanges</p>
+      </div>
+      <div class="help-category">
+        <div class="help-category-icon">👤</div>
+        <h3>Account</h3>
+        <p>Login issues, profile settings, and security</p>
+      </div>
+      <div class="help-category">
+        <div class="help-category-icon">🛒</div>
+        <h3>Shopping</h3>
+        <p>Products, wishlist, cart, and checkout</p>
+      </div>
+    </div>
+
+    <!-- Orders FAQ -->
+    <div class="faq-section">
+      <h2>📦 Orders</h2>
+      <div class="faq-items" id="faq-orders">
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">How do I track my order?</div>
+          <div class="faq-answer">
+            Go to the <a href="track-order.html">Track Order</a> page and enter your order ID. You'll see real-time status updates from order placement to delivery.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">Where can I see my order history?</div>
+          <div class="faq-answer">
+            Login to your account and visit the <a href="dashboard.html">Dashboard</a> to view all your past orders, current orders, and order details.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">Can I cancel my order?</div>
+          <div class="faq-answer">
+            Orders can be cancelled before they are shipped. Please contact customer support immediately with your order ID to request cancellation.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">How long does delivery take?</div>
+          <div class="faq-answer">
+            Standard delivery takes 5-7 business days from order confirmation. You'll receive an estimated delivery date when you place your order.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payments FAQ -->
+    <div class="faq-section">
+      <h2>💳 Payments</h2>
+      <div class="faq-items" id="faq-payments">
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">What payment methods do you accept?</div>
+          <div class="faq-answer">
+            We accept all major credit cards (Visa, MasterCard, American Express), debit cards, and digital payment methods. All transactions are secured with SSL encryption.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">Is my payment information secure?</div>
+          <div class="faq-answer">
+            Yes! We use industry-standard encryption and never store your complete credit card information. All payments are processed through secure payment gateways.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">When will I be charged?</div>
+          <div class="faq-answer">
+            Your payment method is charged immediately when you place an order. You'll receive an email confirmation with payment details.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shipping FAQ -->
+    <div class="faq-section">
+      <h2>🚚 Shipping</h2>
+      <div class="faq-items" id="faq-shipping">
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">Do you offer free shipping?</div>
+          <div class="faq-answer">
+            Yes! We offer free standard shipping on all orders. No minimum purchase required.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">How do I track my shipment?</div>
+          <div class="faq-answer">
+            Once your order ships, you'll receive a tracking number via email. You can also track your order anytime on our <a href="track-order.html">Track Order</a> page using your order ID.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">What if my package is lost or damaged?</div>
+          <div class="faq-answer">
+            If your package is lost or arrives damaged, please contact customer support immediately. We'll investigate and send a replacement or issue a refund.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Returns FAQ -->
+    <div class="faq-section">
+      <h2>↩️ Returns & Refunds</h2>
+      <div class="faq-items" id="faq-returns">
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">What is your return policy?</div>
+          <div class="faq-answer">
+            We accept returns within 30 days of delivery for most items. Products must be unused, in original packaging, and in resellable condition.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">How do I return an item?</div>
+          <div class="faq-answer">
+            Contact customer support with your order ID to initiate a return. We'll provide return instructions and a prepaid shipping label if applicable.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">When will I receive my refund?</div>
+          <div class="faq-answer">
+            Refunds are processed within 5-7 business days after we receive your returned item. The refund will be credited to your original payment method.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">Can I exchange an item?</div>
+          <div class="faq-answer">
+            Yes! If you'd like to exchange an item for a different size or color, contact customer support. We'll arrange the exchange for you.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account FAQ -->
+    <div class="faq-section">
+      <h2>👤 Account</h2>
+      <div class="faq-items" id="faq-account">
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">How do I create an account?</div>
+          <div class="faq-answer">
+            Click on <a href="register.html">Register</a> in the navigation menu. Fill in your name, email, and password to create your account. It only takes a minute!
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">I forgot my password. What should I do?</div>
+          <div class="faq-answer">
+            Click the "Forgot Password" link on the <a href="login.html">Login</a> page. Enter your email address and we'll send you instructions to reset your password.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">How do I update my account information?</div>
+          <div class="faq-answer">
+            Login to your account and visit your <a href="dashboard.html">Dashboard</a>. You can update your profile information, email, and password from there.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">Can I delete my account?</div>
+          <div class="faq-answer">
+            Yes. Please contact customer support to request account deletion. Note that this action is permanent and cannot be undone.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shopping FAQ -->
+    <div class="faq-section">
+      <h2>🛒 Shopping</h2>
+      <div class="faq-items" id="faq-shopping">
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">How do I search for products?</div>
+          <div class="faq-answer">
+            Use the search bar at the top of any page. You can filter by category, price range, and availability. Sort results by price or rating to find exactly what you need.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">What is a wishlist?</div>
+          <div class="faq-answer">
+            A <a href="wishlist.html">wishlist</a> lets you save products you're interested in for later. Click the heart icon on any product to add it to your wishlist.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">How do I compare products?</div>
+          <div class="faq-answer">
+            Click the "Compare" button on product pages to add them to comparison. Visit the <a href="comparison.html">Comparison</a> page to see side-by-side details of up to 3 products.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">Can I modify my cart after checkout?</div>
+          <div class="faq-answer">
+            Once you've completed checkout, the order cannot be modified. However, you can cancel the order before it ships and place a new order with the correct items.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(this)">What is the Smart Product Assistant?</div>
+          <div class="faq-answer">
+            The Smart Assistant is a chat feature that helps answer questions about products. Ask about features, stock availability, comparisons, and purchase recommendations. Click the "Ask Assistant" button on any product page.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="contact-section">
+      <h2>Still have questions?</h2>
+      <p>Our customer support team is here to help you</p>
+      <div class="contact-buttons">
+        <a href="mailto:support@smarttrack-commerce.com" class="btn">Email Support</a>
+        <a href="tel:1-800-SMARTTRACK" class="btn">Call Us</a>
+      </div>
+      <p style="margin-top: 2rem; font-size: 0.9rem;">Support Hours: Monday - Friday, 9 AM - 6 PM EST</p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2024 SmartTrack Commerce. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    function toggleFAQ(element) {
+      const answer = element.nextElementSibling;
+      const isActive = answer.classList.contains('active');
+
+      // Close all open FAQs
+      document.querySelectorAll('.faq-answer.active').forEach(item => {
+        item.classList.remove('active');
+      });
+      document.querySelectorAll('.faq-question.active').forEach(item => {
+        item.classList.remove('active');
+      });
+
+      // Toggle clicked FAQ
+      if (!isActive) {
+        answer.classList.add('active');
+        element.classList.add('active');
+      }
+    }
+
+    function searchFAQ() {
+      const searchTerm = document.getElementById('faq-search').value.toLowerCase();
+      const faqItems = document.querySelectorAll('.faq-item');
+
+      faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question').textContent.toLowerCase();
+        const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+
+        if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = searchTerm ? 'none' : 'block';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders - E-Commerce Store</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .orders-container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .orders-header {
+      margin-bottom: 30px;
+    }
+
+    .orders-header h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .orders-header p {
+      color: #666;
+    }
+
+    .orders-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .order-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: box-shadow 0.3s;
+    }
+
+    .order-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .order-header {
+      background: #f9f9f9;
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .order-header-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .order-header-label {
+      color: #666;
+      font-size: 12px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .order-header-value {
+      color: #333;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-processing {
+      background: #cfe2ff;
+      color: #084298;
+    }
+
+    .status-shipped {
+      background: #d1e7dd;
+      color: #0f5132;
+    }
+
+    .status-delivered {
+      background: #d1e7dd;
+      color: #0a3622;
+    }
+
+    .order-body {
+      padding: 20px;
+    }
+
+    .order-items {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .order-item {
+      display: flex;
+      gap: 15px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+
+    .order-item-image {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .order-item-details {
+      flex: 1;
+    }
+
+    .order-item-name {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .order-item-meta {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .order-item-price {
+      font-weight: 600;
+      color: #333;
+      align-self: center;
+    }
+
+    .order-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .order-total {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .view-details-btn {
+      padding: 10px 20px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+
+    .view-details-btn:hover {
+      background: #45a049;
+    }
+
+    .empty-orders {
+      text-align: center;
+      padding: 80px 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .empty-orders-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    .empty-orders h2 {
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .empty-orders p {
+      color: #999;
+      margin-bottom: 30px;
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #4CAF50;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .order-header {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .order-item {
+        flex-direction: column;
+      }
+
+      .order-footer {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+      }
+
+      .view-details-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav>
+        <div class="logo">
+          <a href="/">E-Store</a>
+        </div>
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Search products...">
+          <button id="searchBtn">Search</button>
+        </div>
+        <div class="nav-links" id="navLinks">
+          <a href="/">Home</a>
+          <a href="/?page=products">Products</a>
+          <a href="/?page=cart">Cart <span class="cart-badge" id="cartBadge">0</span></a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="orders-container">
+      <div class="orders-header">
+        <h1>My Orders</h1>
+        <p>View and track your orders</p>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-state" id="loadingState">
+        <div class="spinner"></div>
+        <p>Loading your orders...</p>
+      </div>
+
+      <!-- Orders List -->
+      <div class="orders-list" id="ordersList" style="display: none;"></div>
+
+      <!-- Empty State -->
+      <div class="empty-orders" id="emptyOrders" style="display: none;">
+        <div class="empty-orders-icon">📦</div>
+        <h2>No orders yet</h2>
+        <p>Start shopping and your orders will appear here</p>
+        <a href="/?page=products" class="btn">Browse Products</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/auth.js"></script>
+  <script>
+    let currentUser = null;
+
+    // Check authentication
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (!response.ok) {
+          window.location.href = '/login.html?redirect=orders';
+          return false;
+        }
+        const data = await response.json();
+        currentUser = data.user;
+        
+        // Update navigation
+        updateNavigation();
+        
+        return true;
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = '/login.html?redirect=orders';
+        return false;
+      }
+    }
+
+    // Update navigation with user info
+    function updateNavigation() {
+      const navLinks = document.getElementById('navLinks');
+      const existingAuth = navLinks.querySelector('.auth-links');
+      
+      if (existingAuth) {
+        existingAuth.remove();
+      }
+
+      if (currentUser) {
+        const authLinks = document.createElement('div');
+        authLinks.className = 'auth-links';
+        authLinks.style.display = 'flex';
+        authLinks.style.gap = '15px';
+        authLinks.innerHTML = `
+          <span style="color: #666;">Hi, ${currentUser.name}</span>
+          <a href="/orders.html">My Orders</a>
+          <a href="#" id="logoutLink">Logout</a>
+        `;
+        navLinks.appendChild(authLinks);
+
+        document.getElementById('logoutLink').addEventListener('click', async (e) => {
+          e.preventDefault();
+          await fetch('/api/auth/logout', { method: 'POST' });
+          window.location.href = '/';
+        });
+      }
+    }
+
+    // Load user orders
+    async function loadOrders() {
+      try {
+        const response = await fetch('/api/orders');
+        
+        if (!response.ok) {
+          throw new Error('Failed to load orders');
+        }
+
+        const orders = await response.json();
+        
+        // Hide loading
+        document.getElementById('loadingState').style.display = 'none';
+
+        if (orders.length === 0) {
+          document.getElementById('emptyOrders').style.display = 'block';
+          return;
+        }
+
+        // Load detailed info for each order
+        const detailedOrders = await Promise.all(
+          orders.map(order => 
+            fetch(`/api/orders/${order.id}`).then(r => r.json())
+          )
+        );
+
+        displayOrders(detailedOrders);
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        document.getElementById('loadingState').innerHTML = `
+          <p style="color: #c62828;">Error loading orders. Please try again.</p>
+        `;
+      }
+    }
+
+    // Display orders
+    function displayOrders(orders) {
+      const ordersList = document.getElementById('ordersList');
+      ordersList.style.display = 'flex';
+
+      ordersList.innerHTML = orders.map(order => {
+        const orderDate = new Date(order.createdAt);
+        const statusClass = `status-${order.status.toLowerCase().replace(/\s+/g, '-')}`;
+
+        return `
+          <div class="order-card">
+            <div class="order-header">
+              <div class="order-header-item">
+                <span class="order-header-label">Order ID</span>
+                <span class="order-header-value">#${order.id}</span>
+              </div>
+              <div class="order-header-item">
+                <span class="order-header-label">Date</span>
+                <span class="order-header-value">${orderDate.toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                })}</span>
+              </div>
+              <div class="order-header-item">
+                <span class="order-header-label">Status</span>
+                <span class="status-badge ${statusClass}">${order.status}</span>
+              </div>
+              <div class="order-header-item">
+                <span class="order-header-label">Total</span>
+                <span class="order-header-value">$${parseFloat(order.totalAmount).toFixed(2)}</span>
+              </div>
+            </div>
+            <div class="order-body">
+              <div class="order-items">
+                ${order.items.map(item => `
+                  <div class="order-item">
+                    <img src="${item.image_url}" alt="${item.name}" class="order-item-image"
+                         onerror="this.src='https://via.placeholder.com/80x80?text=No+Image'">
+                    <div class="order-item-details">
+                      <div class="order-item-name">${item.name}</div>
+                      <div class="order-item-meta">
+                        Quantity: ${item.quantity} × $${parseFloat(item.price).toFixed(2)}
+                      </div>
+                    </div>
+                    <div class="order-item-price">
+                      $${(item.quantity * parseFloat(item.price)).toFixed(2)}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+              <div class="order-footer">
+                <div class="order-total">
+                  Total: $${parseFloat(order.totalAmount).toFixed(2)}
+                </div>
+                <a href="/order-confirmation.html?orderId=${order.id}" class="view-details-btn">
+                  View Details
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Update cart badge
+    function updateCartBadge() {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      const badge = document.getElementById('cartBadge');
+      if (badge) {
+        badge.textContent = totalItems;
+        badge.style.display = totalItems > 0 ? 'inline-block' : 'none';
+      }
+    }
+
+    // Initialize
+    (async function init() {
+      const isAuthenticated = await checkAuth();
+      if (isAuthenticated) {
+        loadOrders();
+        updateCartBadge();
+      }
+    })();
+  </script>
+</body>
+</html>
