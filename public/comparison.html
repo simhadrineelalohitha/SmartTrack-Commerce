@@ -32,22 +32,262 @@
     .comparison-table td {
       padding: 1rem;
       border: 1px solid #eee;
+      text-align: left;
     }
 
     .comparison-table thead th {
-      background: #667eea;
+      background: #3498db;
       color: white;
       position: relative;
     }
 
+    .product-column { min-width: 250px; }
+    
     .remove-product {
       position: absolute;
       top: 10px;
       right: 10px;
-      background: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.3);
       border: none;
       color: white;
       width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    
+    .remove-product:hover { background: rgba(255,0,0,0.7); }
+    
+    .product-image-compare { width: 100%; max-width: 200px; height: auto; }
+    
+    .empty-comparison {
+      text-align: center;
+      padding: 3rem;
+    }
+    
+    .spec-row { background: #f9f9f9; }
+    .spec-row:nth-child(even) { background: white; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">SmartTrack Commerce</a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="wishlist.html">Wishlist</a>
+        <a href="cart.html">Cart</a>
+        <a href="orders.html">Orders</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container comparison-container">
+    <div class="comparison-header">
+      <h1>Compare Products</h1>
+      <button class="btn btn-secondary" onclick="clearAll()">Clear All</button>
+    </div>
+    
+    <div id="comparisonContent">
+      <div class="empty-comparison">
+        <h3>Loading comparison...</h3>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const productIds = urlParams.get('ids')?.split(',').map(id => parseInt(id)).filter(id => !isNaN(id)) || [];
+    
+    async function loadComparison() {
+      if (productIds.length < 2) {
+        document.getElementById('comparisonContent').innerHTML = `
+          <div class="empty-comparison">
+            <h3>No products to compare</h3>
+            <p>Please select 2-3 products from the product listing page.</p>
+            <a href="products.html" class="btn">Browse Products</a>
+          </div>
+        `;
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/products/compare', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productIds })
+        });
+        
+        if (!response.ok) throw new Error('Failed to load products');
+        
+        const products = await response.json();
+        displayComparison(products);
+      } catch (error) {
+        console.error('Error loading comparison:', error);
+        document.getElementById('comparisonContent').innerHTML = `
+          <div class="empty-comparison">
+            <h3>Error loading products</h3>
+            <p>Please try again later.</p>
+          </div>
+        `;
+      }
+    }
+    
+    function displayComparison(products) {
+      if (products.length === 0) {
+        document.getElementById('comparisonContent').innerHTML = '<div class="empty-comparison"><h3>No products found</h3></div>';
+        return;
+      }
+      
+      // Parse specifications
+      const allSpecs = new Set();
+      products.forEach(p => {
+        if (p.specifications) {
+          try {
+            const specs = JSON.parse(p.specifications);
+            Object.keys(specs).forEach(key => allSpecs.add(key));
+          } catch (e) {}
+        }
+      });
+      
+      let html = `
+        <div class="comparison-table-wrapper">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th style="width: 200px;">Feature</th>
+                ${products.map((p, idx) => `
+                  <th class="product-column">
+                    ${p.name}
+                    <button class="remove-product" onclick="removeProduct(${idx})">×</button>
+                  </th>
+                `).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Image</strong></td>
+                ${products.map(p => `
+                  <td><img src="${p.image_url}" alt="${p.name}" class="product-image-compare"></td>
+                `).join('')}
+              </tr>
+              <tr class="spec-row">
+                <td><strong>Brand</strong></td>
+                ${products.map(p => `<td>${p.brand || 'N/A'}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Category</strong></td>
+                ${products.map(p => `<td>${p.category}${p.subcategory ? ` > ${p.subcategory}` : ''}</td>`).join('')}
+              </tr>
+              <tr class="spec-row">
+                <td><strong>Price</strong></td>
+                ${products.map(p => {
+                  const discount = p.discount || 0;
+                  const original = p.price + discount;
+                  return `<td style="color: #e74c3c; font-weight: bold; font-size: 18px;">
+                    $${parseFloat(p.price).toFixed(2)}
+                    ${discount > 0 ? `<br><span style="text-decoration: line-through; color: #999; font-size: 14px;">$${original.toFixed(2)}</span>` : ''}
+                  </td>`;
+                }).join('')}
+              </tr>
+              <tr>
+                <td><strong>Rating</strong></td>
+                ${products.map(p => `<td>${p.avg_rating ? `${p.avg_rating.toFixed(1)}/5 ⭐ (${p.review_count} reviews)` : 'No reviews'}</td>`).join('')}
+              </tr>
+              <tr class="spec-row">
+                <td><strong>Availability</strong></td>
+                ${products.map(p => `<td>${p.stock > 0 ? `<span style="color: green;">✓ In Stock (${p.stock})</span>` : '<span style="color: red;">Out of Stock</span>'}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Description</strong></td>
+                ${products.map(p => `<td>${p.description}</td>`).join('')}
+              </tr>
+      `;
+      
+      // Add specification rows
+      if (allSpecs.size > 0) {
+        html += `<tr><td colspan="${products.length + 1}" style="background: #ddd; font-weight: bold; padding: 15px;">Specifications</td></tr>`;
+        let rowClass = '';
+        allSpecs.forEach(specKey => {
+          rowClass = rowClass === 'spec-row' ? '' : 'spec-row';
+          html += `
+            <tr class="${rowClass}">
+              <td><strong>${specKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</strong></td>
+              ${products.map(p => {
+                let value = 'N/A';
+                if (p.specifications) {
+                  try {
+                    const specs = JSON.parse(p.specifications);
+                    value = specs[specKey] || 'N/A';
+                  } catch (e) {}
+                }
+                return `<td>${value}</td>`;
+              }).join('')}
+            </tr>
+          `;
+        });
+      }
+      
+      html += `
+              <tr>
+                <td><strong>Actions</strong></td>
+                ${products.map(p => `
+                  <td>
+                    <button class="btn" onclick="addToCart(${p.id})" ${p.stock === 0 ? 'disabled' : ''}>Add to Cart</button>
+                    <a href="product.html?id=${p.id}" class="btn btn-secondary" style="display: inline-block; margin-top: 5px;">View Details</a>
+                  </td>
+                `).join('')}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+      
+      document.getElementById('comparisonContent').innerHTML = html;
+    }
+    
+    function removeProduct(index) {
+      productIds.splice(index, 1);
+      if (productIds.length < 2) {
+        window.location.href = 'products.html';
+      } else {
+        window.location.href = `comparison.html?ids=${productIds.join(',')}`;
+      }
+    }
+    
+    function clearAll() {
+      localStorage.removeItem('compareList');
+      window.location.href = 'products.html';
+    }
+    
+    async function addToCart(productId) {
+      if (!isLoggedIn()) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/cart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId, quantity: 1 })
+        });
+        
+        if (response.ok) {
+          showNotification('Added to cart!', 'success');
+          updateCartCount();
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+    
+    loadComparison();
+  </script>
+</body>
+</html>
       height: 30px;
       border-radius: 50%;
       cursor: pointer;

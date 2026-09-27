@@ -268,4 +268,70 @@ router.get('/user/recently-viewed', requireAuth, (req, res) => {
   });
 });
 
+// Compare multiple products
+router.post('/compare', (req, res) => {
+  const { productIds } = req.body;
+
+  if (!productIds || !Array.isArray(productIds) || productIds.length < 2 || productIds.length > 3) {
+    return res.status(400).json({ error: 'Please provide 2-3 product IDs to compare' });
+  }
+
+  const placeholders = productIds.map(() => '?').join(',');
+  const query = `
+    SELECT p.*, COALESCE(AVG(pr.rating), 0) as avg_rating, COUNT(pr.id) as review_count
+    FROM products p
+    LEFT JOIN product_reviews pr ON p.id = pr.product_id
+    WHERE p.id IN (${placeholders})
+    GROUP BY p.id
+  `;
+
+  db.all(query, productIds, (err, products) => {
+    if (err) {
+      console.error('Error comparing products:', err);
+      return res.status(500).json({ error: 'Error comparing products' });
+    }
+
+    if (products.length !== productIds.length) {
+      return res.status(404).json({ error: 'One or more products not found' });
+    }
+
+    res.json(products);
+  });
+});
+
+// Get personalized recommendations
+router.get('/user/recommendations', requireAuth, (req, res) => {
+  const userId = req.session.userId;
+
+  // Get recommendations based on wishlist, cart, and recently viewed categories
+  const query = `
+    SELECT DISTINCT p.*, COALESCE(AVG(pr.rating), 0) as avg_rating, COUNT(pr.id) as review_count
+    FROM products p
+    LEFT JOIN product_reviews pr ON p.id = pr.product_id
+    WHERE p.category IN (
+      SELECT DISTINCT p2.category FROM products p2
+      WHERE p2.id IN (
+        SELECT product_id FROM wishlist WHERE user_id = ?
+        UNION
+        SELECT product_id FROM recently_viewed WHERE user_id = ? ORDER BY viewed_at DESC LIMIT 5
+      )
+    )
+    AND p.id NOT IN (
+      SELECT product_id FROM wishlist WHERE user_id = ?
+    )
+    AND p.stock > 0
+    GROUP BY p.id
+    ORDER BY avg_rating DESC, review_count DESC
+    LIMIT 8
+  `;
+
+  db.all(query, [userId, userId, userId], (err, products) => {
+    if (err) {
+      console.error('Error fetching recommendations:', err);
+      return res.status(500).json({ error: 'Error fetching recommendations' });
+    }
+    res.json(products);
+  });
+});
+
 module.exports = router;

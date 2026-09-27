@@ -26,16 +26,21 @@ function initializeDatabase() {
     if (err) console.error('Error creating users table:', err.message);
   });
 
-  // Create products table
+  // Create products table with enhanced fields
   db.run(`
     CREATE TABLE IF NOT EXISTS products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       description TEXT,
       price REAL NOT NULL,
+      discount REAL DEFAULT 0,
+      brand TEXT,
       image_url TEXT,
       stock INTEGER DEFAULT 0,
       category TEXT,
+      subcategory TEXT,
+      rating REAL DEFAULT 0,
+      specifications TEXT,
       active INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
@@ -43,6 +48,12 @@ function initializeDatabase() {
     if (err) {
       console.error('Error creating products table:', err.message);
     } else {
+      // Add new columns if they don't exist
+      db.run(`ALTER TABLE products ADD COLUMN discount REAL DEFAULT 0`, () => {});
+      db.run(`ALTER TABLE products ADD COLUMN brand TEXT`, () => {});
+      db.run(`ALTER TABLE products ADD COLUMN subcategory TEXT`, () => {});
+      db.run(`ALTER TABLE products ADD COLUMN rating REAL DEFAULT 0`, () => {});
+      db.run(`ALTER TABLE products ADD COLUMN specifications TEXT`, () => {});
       insertSampleProducts();
     }
   });

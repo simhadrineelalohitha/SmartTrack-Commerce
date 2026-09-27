@@ -59,89 +59,163 @@ function handleProductQuestion(productId, question, res) {
     }
 
     let answer = '';
+    
+    // Parse specifications if available
+    let specs = {};
+    if (product.specifications) {
+      try {
+        specs = JSON.parse(product.specifications);
+      } catch (e) {
+        specs = {};
+      }
+    }
+
+    // Price info including discount
+    const originalPrice = product.price + (product.discount || 0);
+    const hasDiscount = product.discount && product.discount > 0;
 
     // What is this product / features
     if (question.includes('what is') || question.includes('tell me about') || question.includes('describe')) {
-      answer = `**${product.name}**\n\n${product.description}\n\n`;
-      answer += `**Price:** $${parseFloat(product.price).toFixed(2)}\n`;
-      answer += `**Category:** ${product.category}\n`;
-      answer += `**Availability:** ${product.stock > 0 ? `In stock (${product.stock} available)` : 'Out of stock'}\n`;
+      answer = `**${product.name}**\n`;
+      if (product.brand) answer += `_by ${product.brand}_\n\n`;
+      answer += `${product.description}\n\n`;
+      answer += `**Price:** $${parseFloat(product.price).toFixed(2)}`;
+      if (hasDiscount) {
+        answer += ` ~~$${originalPrice.toFixed(2)}~~ (Save $${product.discount.toFixed(2)}!)`;
+      }
+      answer += `\n**Category:** ${product.category}${product.subcategory ? ` > ${product.subcategory}` : ''}\n`;
+      answer += `**Availability:** ${product.stock > 0 ? `✅ In stock (${product.stock} available)` : '❌ Out of stock'}\n`;
       if (product.avg_rating > 0) {
-        answer += `**Rating:** ${product.avg_rating.toFixed(1)}/5 stars (${product.review_count} reviews)\n`;
+        answer += `**Rating:** ${product.avg_rating.toFixed(1)}/5 ⭐ (${product.review_count} reviews)\n`;
       }
     }
-    // Features
-    else if (question.includes('feature') || question.includes('specification') || question.includes('details')) {
-      answer = `**${product.name} - Key Details:**\n\n`;
+    // Features / specifications
+    else if (question.includes('feature') || question.includes('specification') || question.includes('specs') || question.includes('details')) {
+      answer = `**${product.name} - Specifications:**\n\n`;
       answer += `${product.description}\n\n`;
-      answer += `**Price:** $${parseFloat(product.price).toFixed(2)}\n`;
-      answer += `**Category:** ${product.category}\n`;
-      answer += `**Stock:** ${product.stock} units available\n`;
+      
+      if (Object.keys(specs).length > 0) {
+        answer += `**Key Specs:**\n`;
+        Object.entries(specs).forEach(([key, value]) => {
+          answer += `• ${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}: ${value}\n`;
+        });
+        answer += `\n`;
+      }
+      
+      answer += `**Price:** $${parseFloat(product.price).toFixed(2)}`;
+      if (hasDiscount) answer += ` (${Math.round(product.discount/originalPrice*100)}% off)`;
+      answer += `\n`;
+      if (product.brand) answer += `**Brand:** ${product.brand}\n`;
       if (product.avg_rating > 0) {
-        answer += `**Customer Rating:** ${product.avg_rating.toFixed(1)}/5 ⭐ based on ${product.review_count} reviews\n`;
+        answer += `**Rating:** ${product.avg_rating.toFixed(1)}/5 ⭐ (${product.review_count} reviews)\n`;
       }
     }
     // Availability / stock
     else if (question.includes('stock') || question.includes('available') || question.includes('in stock')) {
       if (product.stock > 0) {
         answer = `✅ **${product.name}** is currently in stock!\n\n`;
-        answer += `We have **${product.stock} units** available.\n`;
-        answer += `Price: $${parseFloat(product.price).toFixed(2)}`;
+        answer += `📦 **${product.stock} units** available\n`;
+        answer += `💰 **Price:** $${parseFloat(product.price).toFixed(2)}`;
+        if (hasDiscount) answer += ` (Save $${product.discount.toFixed(2)}!)`;
       } else {
         answer = `❌ **${product.name}** is currently out of stock.\n\n`;
-        answer += `Please check back later or explore similar products in the **${product.category}** category.`;
+        answer += `Check back later or explore similar products in **${product.category}**.`;
+      }
+    }
+    // Price / cost / expensive
+    else if (question.includes('price') || question.includes('cost') || question.includes('expensive') || question.includes('cheap')) {
+      answer = `**${product.name}** is priced at **$${parseFloat(product.price).toFixed(2)}**\n\n`;
+      if (hasDiscount) {
+        answer += `🏷️ **Special offer!** Originally $${originalPrice.toFixed(2)}, save $${product.discount.toFixed(2)} (${Math.round(product.discount/originalPrice*100)}% off)\n\n`;
+      }
+      if (product.brand) answer += `Brand: ${product.brand}\n`;
+      answer += `Category: ${product.category}\n`;
+      if (product.avg_rating > 0) {
+        answer += `Rating: ${product.avg_rating.toFixed(1)}/5 ⭐ from ${product.review_count} customers\n`;
       }
     }
     // Is it suitable / good for me
-    else if (question.includes('suitable') || question.includes('good for') || question.includes('right for me')) {
-      answer = `**${product.name}** might be suitable for you if:\n\n`;
-      answer += `• You're looking for ${product.category} products\n`;
-      answer += `• Your budget is around $${parseFloat(product.price).toFixed(2)}\n`;
+    else if (question.includes('suitable') || question.includes('good for') || question.includes('right for me') || question.includes('should i buy')) {
+      answer = `**${product.name}** might be perfect for you if:\n\n`;
+      answer += `✓ You're looking for ${product.category}${product.subcategory ? ` (specifically ${product.subcategory})` : ''}\n`;
+      answer += `✓ Your budget is around $${parseFloat(product.price).toFixed(2)}`;
+      if (hasDiscount) answer += ` (currently on sale!)`;
+      answer += `\n`;
+      if (product.brand) answer += `✓ You prefer ${product.brand} products\n`;
       if (product.avg_rating >= 4) {
-        answer += `• You want a highly-rated product (${product.avg_rating.toFixed(1)}/5 stars)\n`;
+        answer += `✓ You want a highly-rated product (${product.avg_rating.toFixed(1)}/5 ⭐)\n`;
       }
-      answer += `\n${product.description}\n\n`;
+      answer += `\n**Product highlights:**\n${product.description}\n`;
       if (product.review_count > 0) {
-        answer += `**${product.review_count}** customers have reviewed this product. Check the reviews section for detailed feedback!`;
+        answer += `\n💬 Read ${product.review_count} customer reviews for real experiences!`;
       }
     }
-    // Advantages / benefits
-    else if (question.includes('advantage') || question.includes('benefit') || question.includes('why buy')) {
-      answer = `**Why choose ${product.name}?**\n\n`;
-      if (product.avg_rating >= 4) {
-        answer += `✅ High customer satisfaction (${product.avg_rating.toFixed(1)}/5 stars)\n`;
+    // Brand question
+    else if (question.includes('brand') || question.includes('manufacturer') || question.includes('who makes')) {
+      if (product.brand) {
+        answer = `**${product.name}** is made by **${product.brand}**\n\n`;
+        answer += `${product.description}\n\n`;
+        answer += `Price: $${parseFloat(product.price).toFixed(2)}`;
+        if (hasDiscount) answer += ` (On sale!)`;
+      } else {
+        answer = `Brand information is not specified for **${product.name}**.\n\n`;
+        answer += `${product.description}`;
       }
-      if (product.stock > 20) {
-        answer += `✅ Good availability (${product.stock} in stock)\n`;
-      }
-      answer += `✅ ${product.description}\n`;
-      answer += `✅ Competitive price: $${parseFloat(product.price).toFixed(2)}\n`;
-      answer += `✅ Part of our ${product.category} collection\n`;
     }
     // Similar products
-    else if (question.includes('similar') || question.includes('alternative') || question.includes('other options')) {
+    else if (question.includes('similar') || question.includes('alternative') || question.includes('other options') || question.includes('like this')) {
       return getSimilarProducts(product.id, product.category, res);
     }
     // Before buying / consider
     else if (question.includes('consider') || question.includes('before buying') || question.includes('should i know')) {
       answer = `**Before buying ${product.name}, consider:**\n\n`;
-      answer += `💰 **Price:** $${parseFloat(product.price).toFixed(2)}\n`;
-      answer += `📦 **Availability:** ${product.stock > 0 ? `In stock (${product.stock} available)` : '⚠️ Currently out of stock'}\n`;
+      answer += `💰 **Price:** $${parseFloat(product.price).toFixed(2)}`;
+      if (hasDiscount) answer += ` (${Math.round(product.discount/originalPrice*100)}% discount!)`;
+      answer += `\n`;
+      if (product.brand) answer += `🏷️ **Brand:** ${product.brand}\n`;
+      answer += `📦 **Availability:** ${product.stock > 0 ? `✅ In stock (${product.stock} available)` : '⚠️ Currently out of stock'}\n`;
       if (product.avg_rating > 0) {
         answer += `⭐ **Rating:** ${product.avg_rating.toFixed(1)}/5 from ${product.review_count} customers\n`;
       } else {
-        answer += `ℹ️ **No reviews yet** - Be the first to review!\n`;
+        answer += `ℹ️ **No reviews yet** - Be the first!\n`;
       }
-      answer += `📂 **Category:** ${product.category}\n\n`;
-      answer += `${product.description}\n\n`;
-      answer += `💡 **Tip:** Check customer reviews and compare with similar products before making your decision.`;
+      answer += `📂 **Category:** ${product.category}${product.subcategory ? ` > ${product.subcategory}` : ''}\n\n`;
+      
+      if (Object.keys(specs).length > 0) {
+        answer += `**Key specifications:**\n`;
+        Object.entries(specs).slice(0, 5).forEach(([key, value]) => {
+          answer += `• ${key.replace(/_/g, ' ')}: ${value}\n`;
+        });
+        answer += `\n`;
+      }
+      
+      answer += `💡 **Tip:** Check customer reviews and compare similar products before deciding.`;
+    }
+    // Warranty / guarantee
+    else if (question.includes('warranty') || question.includes('guarantee') || question.includes('return')) {
+      answer = `For **${product.name}**:\n\n`;
+      answer += `Our standard policies apply:\n`;
+      answer += `• 30-day return policy\n`;
+      answer += `• Manufacturer warranty (varies by product)\n`;
+      answer += `• Secure payments and buyer protection\n\n`;
+      answer += `For specific warranty details, please check with our customer service after purchase.`;
     }
     else {
-      answer = `I have information about **${product.name}**:\n\n`;
+      // Default comprehensive response
+      answer = `**${product.name}**\n`;
+      if (product.brand) answer += `_by ${product.brand}_\n\n`;
       answer += `${product.description}\n\n`;
-      answer += `**Price:** $${parseFloat(product.price).toFixed(2)}\n`;
-      answer += `**Stock:** ${product.stock > 0 ? 'Available' : 'Out of stock'}\n\n`;
-      answer += `You can ask me:\n• What are the features?\n• Is it in stock?\n• Is it suitable for me?\n• Show similar products\n• What should I consider before buying?`;
+      answer += `💰 **Price:** $${parseFloat(product.price).toFixed(2)}`;
+      if (hasDiscount) answer += ` ~~$${originalPrice.toFixed(2)}~~ 🏷️`;
+      answer += `\n📦 **Stock:** ${product.stock > 0 ? `${product.stock} available` : 'Out of stock'}\n`;
+      if (product.avg_rating > 0) {
+        answer += `⭐ **Rating:** ${product.avg_rating.toFixed(1)}/5 (${product.review_count} reviews)\n`;
+      }
+      answer += `\n**Ask me:**\n`;
+      answer += `• What are the specifications?\n`;
+      answer += `• Is it suitable for me?\n`;
+      answer += `• Show similar products\n`;
+      answer += `• What should I consider?\n`;
     }
 
     res.json({ answer, type: 'product', product });

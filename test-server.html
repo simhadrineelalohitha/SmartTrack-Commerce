@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Test - SmartTrack Commerce</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .status {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #4CAF50; }
+        .error { border-left: 4px solid #f44336; }
+        .loading { border-left: 4px solid #2196F3; }
+        h1 { color: #333; }
+        .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+        .product { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .product h3 { margin: 0 0 10px 0; color: #333; font-size: 16px; }
+        .product .price { color: #4CAF50; font-weight: bold; font-size: 18px; }
+        .product .category { color: #666; font-size: 12px; margin: 5px 0; }
+        button { background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #45a049; }
+    </style>
+</head>
+<body>
+    <h1>🛍️ SmartTrack Commerce - Server Test</h1>
+    
+    <div id="status" class="status loading">
+        <h2>Testing Server Connection...</h2>
+        <p>Checking if server is running on http://localhost:3000</p>
+    </div>
+
+    <div id="productStats" style="display: none;" class="status success">
+        <h2>📊 Product Catalog</h2>
+        <p><strong>Total Products:</strong> <span id="totalCount">0</span></p>
+        <div id="categoryBreakdown"></div>
+        <button onclick="showAllProducts()">Show All Products</button>
+        <button onclick="window.location.href='http://localhost:3000'">Go to Store</button>
+    </div>
+
+    <div id="products" class="products"></div>
+
+    <script>
+        async function testServer() {
+            try {
+                // Test products API
+                const response = await fetch('http://localhost:3000/api/products');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const products = await response.json();
+                
+                // Update status
+                const status = document.getElementById('status');
+                status.className = 'status success';
+                status.innerHTML = `
+                    <h2>✅ Server is Running Successfully!</h2>
+                    <p>Connected to http://localhost:3000</p>
+                    <p>Database is working correctly</p>
+                `;
+                
+                // Show product stats
+                document.getElementById('productStats').style.display = 'block';
+                document.getElementById('totalCount').textContent = products.length;
+                
+                // Count by category
+                const categoryCounts = {};
+                products.forEach(p => {
+                    categoryCounts[p.category] = (categoryCounts[p.category] || 0) + 1;
+                });
+                
+                const breakdown = document.getElementById('categoryBreakdown');
+                breakdown.innerHTML = '<h3>By Category:</h3>' + 
+                    Object.entries(categoryCounts)
+                        .map(([cat, count]) => `<p><strong>${cat}:</strong> ${count} products</p>`)
+                        .join('');
+                
+                // Store products for later
+                window.allProducts = products;
+                
+            } catch (error) {
+                const status = document.getElementById('status');
+                status.className = 'status error';
+                status.innerHTML = `
+                    <h2>❌ Connection Failed</h2>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p>Make sure the server is running on http://localhost:3000</p>
+                    <button onclick="testServer()">Retry</button>
+                `;
+            }
+        }
+        
+        function showAllProducts() {
+            const container = document.getElementById('products');
+            container.innerHTML = window.allProducts.slice(0, 20).map(p => `
+                <div class="product">
+                    <h3>${p.name}</h3>
+                    <div class="category">${p.category}</div>
+                    <div class="price">$${p.price}</div>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                        ${p.description.substring(0, 100)}...
+                    </p>
+                    <p style="font-size: 12px; color: #999;">Stock: ${p.stock}</p>
+                </div>
+            `).join('');
+            
+            if (window.allProducts.length > 20) {
+                container.innerHTML += `<div class="status" style="grid-column: 1/-1; text-align: center;">
+                    <p>Showing 20 of ${window.allProducts.length} products</p>
+                    <button onclick="window.location.href='http://localhost:3000/products.html'">View All Products</button>
+                </div>`;
+            }
+        }
+        
+        // Test on page load
+        testServer();
+    </script>
+</body>
+</html>
