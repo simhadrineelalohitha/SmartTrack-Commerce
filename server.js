@@ -25,7 +25,8 @@ app.use(session({
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'lax'  // Changed from 'none' to 'lax' for better compatibility
   }
 }));
 
@@ -41,8 +42,33 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/assistant', assistantRoutes);
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  db.all('SELECT COUNT(*) as count FROM products', [], (err, rows) => {
+    const productCount = rows && rows[0] ? rows[0].count : 0;
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      database: err ? 'error' : 'connected',
+      products: productCount,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  });
+});
+
 // Serve the main page
 app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// SPA fallback - serve index.html for all non-API, non-file routes
+app.get('*', (req, res, next) => {
+  // Skip API routes - let them 404 properly
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  
+  // For HTML pages, serve index.html (SPA routing)
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
@@ -65,9 +91,10 @@ function importProductsIfNeeded() {
     const currentCount = rows && rows[0] ? rows[0].count : 0;
     console.log(`Current products in database: ${currentCount}`);
     
-    // Import full catalog if less than 50 products
-    if (currentCount < 50) {
-      console.log('📦 Importing full product catalog (54 products)...');
+    // Only seed if database is completely empty (safer for production)
+    // Changed from < 50 to === 0 to prevent overwriting manual changes
+    if (currentCount === 0) {
+      console.log('📦 Database empty. Importing full product catalog (54 products)...');
       
       const products = require('./database/seed-marketplace-data')();
       
@@ -86,7 +113,7 @@ function importProductsIfNeeded() {
           
           if (completed === products.length) {
             stmt.finalize(() => {
-              console.log(`✅ All 54 products imported successfully!`);
+              console.log(`✅ Product import complete! Added ${products.length - errors} products.`);
               if (errors > 0) {
                 console.log(`⚠️  ${errors} products failed to import.`);
               }
@@ -95,7 +122,8 @@ function importProductsIfNeeded() {
         });
       });
     } else {
-      console.log(`✓ Database already has ${currentCount} products.`);
+      console.log(`✓ Database already has ${currentCount} products. Skipping auto-seed.`);
+      console.log(`   (Use admin panel to add/modify products in production)`);
     }
   });
 }

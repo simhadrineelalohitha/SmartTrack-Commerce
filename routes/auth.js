@@ -4,14 +4,33 @@ const db = require('../database/db-factory');
 
 const router = express.Router();
 
-// Simple password hashing using Node.js crypto module
+// Secure password hashing using PBKDF2 (built-in Node.js crypto)
+const SALT_ROUNDS = 10000;
+const KEY_LENGTH = 64;
+const DIGEST = 'sha512';
+
 function hashPassword(password) {
-  return crypto.createHash('sha256').update(password).digest('hex');
+  return new Promise((resolve, reject) => {
+    // Generate a random salt
+    const salt = crypto.randomBytes(16).toString('hex');
+    
+    crypto.pbkdf2(password, salt, SALT_ROUNDS, KEY_LENGTH, DIGEST, (err, derivedKey) => {
+      if (err) reject(err);
+      // Store salt and hash together
+      resolve(salt + ':' + derivedKey.toString('hex'));
+    });
+  });
 }
 
 function verifyPassword(password, hashedPassword) {
-  const hash = hashPassword(password);
-  return hash === hashedPassword;
+  return new Promise((resolve, reject) => {
+    const [salt, originalHash] = hashedPassword.split(':');
+    
+    crypto.pbkdf2(password, salt, SALT_ROUNDS, KEY_LENGTH, DIGEST, (err, derivedKey) => {
+      if (err) reject(err);
+      resolve(derivedKey.toString('hex') === originalHash);
+    });
+  });
 }
 
 // Email validation regex
@@ -67,8 +86,8 @@ router.post('/register', async (req, res) => {
       }
 
       try {
-        // Hash password
-        const hashedPassword = hashPassword(password);
+        // Hash password with bcrypt
+        const hashedPassword = await hashPassword(password);
 
         // Insert new user
         db.run(
@@ -132,8 +151,8 @@ router.post('/login', async (req, res) => {
       }
 
       try {
-        // Compare passwords
-        const validPassword = verifyPassword(password, user.password);
+        // Compare passwords with bcrypt
+        const validPassword = await verifyPassword(password, user.password);
 
         if (!validPassword) {
           return res.status(401).json({ error: 'Invalid email or password' });

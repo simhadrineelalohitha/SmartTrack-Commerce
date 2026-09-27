@@ -354,3 +354,33 @@ if (document.readyState === 'loading') {
 } else {
   ComparisonManager.updateUI();
 }
+
+
+// HTML Escape function for security
+function escapeHtml(text) {
+  if (!text) return '';
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+// Get stock status
+function getStockStatus(stock) {
+  if (stock === 0) {
+    return { class: 'stock-out', text: 'Out of Stock' };
+  } else if (stock < 10) {
+    return { class: 'stock-low', text: `Only ${stock} left` };
+  } else {
+    return { class: 'stock-in', text: 'In Stock' };
+  }
+}
+
+// Quick add to cart from product cards
+function quickAddToCart(productId) {
+  return addToCartValidated(productId, 1);
+}
