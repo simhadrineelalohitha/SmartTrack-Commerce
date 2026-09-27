@@ -1,6 +1,6 @@
 const express = require('express');
 const crypto = require('crypto');
-const db = require('../database/db');
+const db = require('../database/db-factory');
 
 const router = express.Router();
 
